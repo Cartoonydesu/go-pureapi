@@ -56,7 +56,7 @@ func (h *Handler) GetSkillById(w http.ResponseWriter, r *http.Request) {
 	if err := row.Scan(&s.Key, &s.Name, &s.Description, &s.Logo, pq.Array(&s.Tags)); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"message", "Skill not existed"}`))
+		w.Write([]byte(`{"message": "Skill not existed"}`))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

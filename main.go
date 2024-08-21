@@ -44,26 +44,21 @@ func main() {
 	defer db.Close()
 	h := skill.NewHandler(db)
 	http.HandleFunc("/api/v1/skills", func(w http.ResponseWriter, r *http.Request) {
-		// log.Println(r.URL.Path)
-		// if r.URL.Path == "/api/v1/skills" {
 			if r.Method == "GET" {
 				h.GetAllSkills(w, r)
 			} else {
 				methodNotAllowResponse(w)
 			}
-		// } else {
-		// 	w.Header().Set("Content-Type", "application/json")
-		// 	w.WriteHeader(http.StatusNotFound)
-		// 	w.Write([]byte(`{"message": "Unknow request path"}`))
-		// }
 	})
 	http.HandleFunc("/api/v1/skills/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
-			// log.Print(r.URL.Path)
 			h.GetSkillById(w, r)
 		} else {
 			methodNotAllowResponse(w)
 		}
+	})
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		methodNotFoundResponse(w)
 	})
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
@@ -72,4 +67,10 @@ func methodNotAllowResponse(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusMethodNotAllowed)
 	w.Write([]byte(`{"message": "Method not allow"}`))
+}
+
+func methodNotFoundResponse(w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte(`{"message": "Path not found"}`))
 }
