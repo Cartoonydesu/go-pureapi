@@ -32,7 +32,7 @@ func NewRouter(db *sql.DB) *router {
 		routes: make(map[string]map[string]http.HandlerFunc),
 	}
 	sh := skill.NewHandler(db)
-	router.addRoute("GET", "/api/v1/skills", sh.GetAllSkill)
+	router.addRoute("GET", "/api/v1/skills", sh.GetAllSkills)
 
 	return router
 }
