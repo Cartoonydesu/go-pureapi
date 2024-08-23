@@ -60,6 +60,8 @@ func main() {
 		pathArr := strings.Split(path, "/")
 		if r.Method == "GET" {
 			h.GetSkillById(w, r)
+		} else if r.Method == "DELETE" {
+			h.DeleteSkill(w, r)
 		} else if r.Method == "PUT" && len(pathArr) == 1 {
 			if len(pathArr) == 1 {
 				h.UpdateSkill(w, r, pathArr[0])

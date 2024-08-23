@@ -1,6 +1,7 @@
 package skill
 
 import (
+	"cartoonydesu/response"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -40,8 +41,12 @@ func (h *Handler) GetAllSkills(w http.ResponseWriter, r *http.Request) {
 		}
 		skills = append(skills, s)
 	}
-	j, _ := json.Marshal(skills)
+	res := response.Response{
+		Status: "success",
+		Data: skills,
+	}
 	w.Header().Set("Content-Type", "application/json")
+	j, _ := json.Marshal(res)
 	w.Write(j)
 }
 
@@ -58,8 +63,12 @@ func (h *Handler) GetSkillById(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`{"message": "Skill not existed"}`))
 		return
 	}
+	res := response.Response{
+		Status: "success",
+		Data: s,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	j, _ := json.Marshal(s)
+	j, _ := json.Marshal(res)
 	w.Write(j)
 }
 
@@ -89,8 +98,12 @@ func (h *Handler) CreateSkill(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 		return
 	}
+	res := response.Response{
+		Status: "success",
+		Data: s,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	j, _ := json.Marshal(s)
+	j, _ := json.Marshal(res)
 	w.Write(j)
 }
 
@@ -123,8 +136,12 @@ func (h *Handler) UpdateSkill(w http.ResponseWriter, r *http.Request, key string
 		log.Panic(err)
 		return
 	}
+	res := response.Response{
+		Status: "success",
+		Data: sk,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	j, _ := json.Marshal(sk)
+	j, _ := json.Marshal(res)
 	w.Write(j)
 }
 
@@ -154,8 +171,12 @@ func (h *Handler) UpdateSkillName(w http.ResponseWriter, r *http.Request, key st
 		log.Panic(err)
 		return
 	}
+	res := response.Response{
+		Status: "success",
+		Data: sk,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	j, _ := json.Marshal(sk)
+	j, _ := json.Marshal(res)
 	w.Write(j)
 }
 
@@ -185,8 +206,12 @@ func (h *Handler) UpdateSkillDescription(w http.ResponseWriter, r *http.Request,
 		log.Panic(err)
 		return
 	}
+	res := response.Response{
+		Status: "success",
+		Data: sk,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	j, _ := json.Marshal(sk)
+	j, _ := json.Marshal(res)
 	w.Write(j)
 
 }
@@ -217,8 +242,12 @@ func (h *Handler) UpdateSkillLogo(w http.ResponseWriter, r *http.Request, key st
 		log.Panic(err)
 		return
 	}
+	res := response.Response{
+		Status: "success",
+		Data: sk,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	j, _ := json.Marshal(sk)
+	j, _ := json.Marshal(res)
 	w.Write(j)
 }
 
@@ -248,12 +277,37 @@ func (h *Handler) UpdateSkillTags(w http.ResponseWriter, r *http.Request, key st
 		log.Panic(err)
 		return
 	}
+	res := response.Response{
+		Status: "success", 
+		Data: sk,
+	}
 	w.Header().Set("Content-Type", "application/json")
-	j, _ := json.Marshal(sk)
+	j, _ := json.Marshal(res)
 	w.Write(j)
 
 }
 
 func (h *Handler) DeleteSkill(w http.ResponseWriter, r *http.Request) {
-
+	key, found := strings.CutPrefix(r.URL.Path, "/api/v1/skills/")
+	if !found {
+		log.Panic("no key found")
+		return
+	}
+	stmt, err := h.Db.Prepare("DELETE FROM skill where key = $1")
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	defer stmt.Close()
+	if _, err := stmt.Exec(key); err != nil {
+		log.Panic(err)
+		return
+	}
+	res := response.Response{
+		Status: "success",
+		Data:   "Skill deleted",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	j, _ := json.Marshal(res)
+	w.Write(j)
 }
