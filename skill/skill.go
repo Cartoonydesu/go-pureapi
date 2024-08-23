@@ -51,9 +51,8 @@ func (h *Handler) GetSkillById(w http.ResponseWriter, r *http.Request) {
 	if key == "" {
 		log.Panic("no key found")
 	}
-	row := h.Db.QueryRow(fmt.Sprintf("SELECT key, name, description, logo, tags FROM skill WHERE key = '%v';", key))
-	var s Skill
-	if err := row.Scan(&s.Key, &s.Name, &s.Description, &s.Logo, pq.Array(&s.Tags)); err != nil {
+	s, err := getSkillByKey(key, h.Db)
+	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"message": "Skill not existed"}`))
@@ -62,6 +61,15 @@ func (h *Handler) GetSkillById(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	j, _ := json.Marshal(s)
 	w.Write(j)
+}
+
+func getSkillByKey(key string, db *sql.DB) (Skill, error) {
+	row := db.QueryRow(fmt.Sprintf("SELECT key, name, description, logo, tags FROM skill WHERE key = '%v';", key))
+	var s Skill
+	if err := row.Scan(&s.Key, &s.Name, &s.Description, &s.Logo, pq.Array(&s.Tags)); err != nil {
+		return Skill{}, err
+	}
+	return s, nil
 }
 
 func (h *Handler) CreateSkill(w http.ResponseWriter, r *http.Request) {
@@ -93,23 +101,156 @@ type UpdateSkill struct {
 	Tags        []string `json:"tags" binding:"required"`
 }
 
-func (h *Handler) UpdateSkill(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateSkill(w http.ResponseWriter, r *http.Request, key string) {
+	var s UpdateSkill
+	err := json.NewDecoder(r.Body).Decode(&s)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	stmt, err := h.Db.Prepare("UPDATE skill SET name = $1, description = $2, logo = $3, tags = $4 WHERE key = $5;")
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	defer stmt.Close()
+	if _, err := stmt.Exec(s.Name, s.Description, s.Logo, pq.Array(s.Tags), key); err != nil {
+		log.Panic(err)
+		return
+	}
+	sk, err := getSkillByKey(key, h.Db)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	j, _ := json.Marshal(sk)
+	w.Write(j)
+}
+
+type Name struct {
+	Name string `json:"name" binding:"required"`
+}
+
+func (h *Handler) UpdateSkillName(w http.ResponseWriter, r *http.Request, key string) {
+	var name Name
+	err := json.NewDecoder(r.Body).Decode(&name)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	stmt, err := h.Db.Prepare("UPDATE skill SET name = $1 WHERE key = $2;")
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	defer stmt.Close()
+	if _, err := stmt.Exec(name.Name, key); err != nil {
+		log.Panic(err)
+		return
+	}
+	sk, err := getSkillByKey(key, h.Db)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	j, _ := json.Marshal(sk)
+	w.Write(j)
+}
+
+type Description struct {
+	Description string `json:"description" binding:"required"`
+}
+
+func (h *Handler) UpdateSkillDescription(w http.ResponseWriter, r *http.Request, key string) {
+	var desc Description
+	err := json.NewDecoder(r.Body).Decode(&desc)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	stmt, err := h.Db.Prepare("UPDATE skill SET description = $1 WHERE key = $2;")
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	defer stmt.Close()
+	if _, err := stmt.Exec(desc.Description, key); err != nil {
+		log.Panic(err)
+		return
+	}
+	sk, err := getSkillByKey(key, h.Db)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	j, _ := json.Marshal(sk)
+	w.Write(j)
 
 }
 
-func (h *Handler) UpdateSkillName(w http.ResponseWriter, r *http.Request) {
-
+type Logo struct {
+	Logo string `json:"logo" binding:"required"`
 }
 
-func (h *Handler) UpdateSkillDescription(w http.ResponseWriter, r *http.Request) {
-
+func (h *Handler) UpdateSkillLogo(w http.ResponseWriter, r *http.Request, key string) {
+	var logo Logo
+	err := json.NewDecoder(r.Body).Decode(&logo)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	stmt, err := h.Db.Prepare("UPDATE skill SET logo = $1 WHERE key = $2;")
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	defer stmt.Close()
+	if _, err := stmt.Exec(logo.Logo, key); err != nil {
+		log.Panic(err)
+		return
+	}
+	sk, err := getSkillByKey(key, h.Db)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	j, _ := json.Marshal(sk)
+	w.Write(j)
 }
 
-func (h *Handler) UpdateSkillLogo(w http.ResponseWriter, r *http.Request) {
-
+type Tags struct {
+	Tags []string `json:"tags" binding:"required"`
 }
 
-func (h *Handler) UpdateSkillTags(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateSkillTags(w http.ResponseWriter, r *http.Request, key string) {
+	var tags Tags
+	err := json.NewDecoder(r.Body).Decode(&tags)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	stmt, err := h.Db.Prepare("UPDATE skill SET tags = $1 WHERE key = $2;")
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	defer stmt.Close()
+	if _, err := stmt.Exec(pq.Array(tags.Tags), key); err != nil {
+		log.Panic("exec===", err)
+		return
+	}
+	sk, err := getSkillByKey(key, h.Db)
+	if err != nil {
+		log.Panic(err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	j, _ := json.Marshal(sk)
+	w.Write(j)
 
 }
 

@@ -56,26 +56,26 @@ func main() {
 		}
 	})
 	http.HandleFunc("/api/v1/skills/", func(w http.ResponseWriter, r *http.Request) {
+		path, _ := strings.CutPrefix(r.URL.Path, "/api/v1/skills/")
+		pathArr := strings.Split(path, "/")
 		if r.Method == "GET" {
 			h.GetSkillById(w, r)
-		} else if r.Method == "PUT" {
-			path, _ := strings.CutPrefix(r.URL.Path, "/api/v1/skills/")
-			pathArr := strings.Split(path, "/")
+		} else if r.Method == "PUT" && len(pathArr) == 1 {
 			if len(pathArr) == 1 {
-				h.CreateSkill(w, r)
-			} else if len(pathArr) == 3 && pathArr[1] == "action" {
-				switch pathArr[2] {
-				case "name":
-					h.UpdateSkillName(w, r)
-				case "description":
-					h.UpdateSkillDescription(w, r)
-				case "logo":
-					h.UpdateSkillLogo(w, r)
-				case "tags":
-					h.UpdateSkillTags(w, r)
-				}
+				h.UpdateSkill(w, r, pathArr[0])
 			} else {
 				methodNotAllowResponse(w)
+			}
+		} else if r.Method == "PATCH" && len(pathArr) == 3 && pathArr[1] == "action" {
+			switch pathArr[2] {
+			case "name":
+				h.UpdateSkillName(w, r, pathArr[0])
+			case "description":
+				h.UpdateSkillDescription(w, r, pathArr[0])
+			case "logo":
+				h.UpdateSkillLogo(w, r, pathArr[0])
+			case "tags":
+				h.UpdateSkillTags(w, r, pathArr[0])
 			}
 		} else {
 			methodNotAllowResponse(w)
