@@ -5,6 +5,7 @@ import (
 	"cartoonydesu/skill"
 	"log"
 	"net/http"
+	"strings"
 )
 
 // func main() {
@@ -44,15 +45,38 @@ func main() {
 	defer db.Close()
 	h := skill.NewHandler(db)
 	http.HandleFunc("/api/v1/skills", func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == "GET" {
-				h.GetAllSkills(w, r)
-			} else {
-				methodNotAllowResponse(w)
-			}
+		if r.Method == "GET" {
+			h.GetAllSkills(w, r)
+		} else if r.Method == "POST" {
+			h.CreateSkill(w, r)
+		} else if r.Method == "DELETE" {
+			h.DeleteSkill(w, r)
+		} else {
+			methodNotAllowResponse(w)
+		}
 	})
 	http.HandleFunc("/api/v1/skills/", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			h.GetSkillById(w, r)
+		} else if r.Method == "PUT" {
+			path, _ := strings.CutPrefix(r.URL.Path, "/api/v1/skills/")
+			pathArr := strings.Split(path, "/")
+			if len(pathArr) == 1 {
+				h.CreateSkill(w, r)
+			} else if len(pathArr) == 3 && pathArr[1] == "action" {
+				switch pathArr[2] {
+				case "name":
+					h.UpdateSkillName(w, r)
+				case "description":
+					h.UpdateSkillDescription(w, r)
+				case "logo":
+					h.UpdateSkillLogo(w, r)
+				case "tags":
+					h.UpdateSkillTags(w, r)
+				}
+			} else {
+				methodNotAllowResponse(w)
+			}
 		} else {
 			methodNotAllowResponse(w)
 		}
