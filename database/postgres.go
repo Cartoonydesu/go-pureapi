@@ -11,11 +11,11 @@ func NewDB() *sql.DB {
 	db, err := sql.Open("postgres", os.Getenv("POSTGRES_URI"))
 	log.Print(os.Getenv("POSTGRES_URI"), "\n")
 	if err != nil {
-		log.Panic("Can not open db")
+		log.Panic("Can not open db", err)
 	}
 	err = db.Ping()
 	if err != nil {
-		log.Panic("Can not ping db")
+		log.Panic("Can not ping db", err)
 	}
 	return db
 }
