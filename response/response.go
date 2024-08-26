@@ -21,3 +21,25 @@ func Success(w http.ResponseWriter, st string, data any) {
 	j, _ := json.Marshal(res)
 	w.Write(j)
 }
+
+func BadRequestResponse(w http.ResponseWriter, st string, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusBadRequest)
+	res := Response{
+		Status: st,
+		Message: msg,
+	}
+	j, _ := json.Marshal(res)
+	w.Write(j)
+}
+
+func InternalServerErrorResponse(w http.ResponseWriter, st string, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusInternalServerError)
+	res := Response{
+		Status: st,
+		Message: msg,
+	}
+	j, _ := json.Marshal(res)
+	w.Write(j)
+}

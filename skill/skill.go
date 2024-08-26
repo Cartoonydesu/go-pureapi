@@ -31,7 +31,7 @@ type Skill struct {
 func (h *Handler) GetAllSkills(w http.ResponseWriter, r *http.Request) {
 	rows, err := h.Db.Query("SELECT key, name, description, logo, tags FROM skill;")
 	if err != nil {
-		log.Panic(err)
+		response.BadRequestResponse(w, "success", "Query error")
 	}
 	var skills []Skill
 	for rows.Next() {
